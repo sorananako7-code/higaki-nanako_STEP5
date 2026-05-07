@@ -2,63 +2,54 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>JavaScript 演習（完成版）</title>
+    <title>JavaScript 最終版（ログ強化）</title>
     <style>
         body {
-            transition: background-color 0.4s;
+            transition: background-color 0.4s ease;
             padding: 30px;
             font-family: sans-serif;
             display: flex;
             justify-content: center;
+            background-color: #f5f5f5;
         }
         .container {
             width: 100%;
             max-width: 500px;
             background: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
         .highlight {
-            border: 3px solid orange !important;
-            background-color: #fffbe6;
+            border: 3px solid #ffd700 !important;
+            background-color: #fffdf0;
         }
         #display-area {
             margin-top: 20px;
             padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            min-height: 120px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            min-height: 150px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed; /* テーブルの幅を固定 */
+            table-layout: fixed;
         }
         td {
-            padding: 12px 8px;
-            border-bottom: 1px solid #eee;
-            word-wrap: break-word; /* 長いテキストの改行対策 */
+            padding: 12px 10px;
+            border-bottom: 1px solid #fafafa;
+            word-wrap: break-word;
         }
-        /* --- 削除ボタンの固定スタイル --- */
         .btn-delete {
             background-color: #ff4d4f;
             color: white;
             border: none;
-            width: 70px;      /* 幅を固定 */
-            height: 32px;     /* 高さを固定 */
-            line-height: 32px; /* テキストの垂直中央揃え */
-            text-align: center;
+            width: 70px;
+            height: 32px;
             border-radius: 4px;
             cursor: pointer;
-            padding: 0;       /* パディングによる変動を防ぐ */
-            font-size: 14px;
-            transition: opacity 0.2s;
         }
-        .btn-delete:hover {
-            opacity: 0.8;
-        }
-        /* ボタンが入るセルを右寄せ & 幅指定 */
         .cell-action {
             width: 80px;
             text-align: right;
@@ -69,13 +60,12 @@
 
 <div class="container">
     <h2>テキスト管理パネル</h2>
-
-    <input type="text" id="text-input" placeholder="テキストを入力">
-    <button id="show-btn">表示</button>
-    <button id="change-bg-btn">背景色を変更</button>
-
-    <p>現在の件数: <span id="counter">0</span> / 3</p>
-
+    <div style="margin-bottom: 15px;">
+        <input type="text" id="text-input" placeholder="テキストを入力...">
+        <button id="show-btn">表示</button>
+        <button id="change-bg-btn">背景色を変更</button>
+    </div>
+    <p>現在の件数: <span id="counter" style="font-weight: bold;">0</span> / 3</p>
     <div id="display-area">
         <table id="text-table">
             <tbody id="table-body"></tbody>
@@ -93,10 +83,14 @@
 
     const colors = ['lightblue', 'lightgreen', 'lightcoral'];
     let colorIndex = 0;
-    let loopCount = 0;
 
+    // --- ログ用変数 ---
+    let totalActionCount = 0; // すべての操作（追加・削除）の通算
+
+    // --- メイン：表示ボタンクリック ---
     showBtn.addEventListener('click', () => {
         const val = textInput.value.trim();
+
         if (val === "") {
             alert("入力値が空です。");
             return;
@@ -104,44 +98,63 @@
 
         displayArea.classList.toggle('highlight');
 
+        // 最大3件の押し出し制御
         if (tableBody.rows.length >= 3) {
             tableBody.deleteRow(0);
+            console.log("%c[System] 最大件数に達したため、古いデータを押し出しました。", "color: orange;");
         }
 
-        loopCount++;
-        console.log(`操作ログ: ${loopCount} 回目の入力 (値: "${val}")`);
+        totalActionCount++;
+        console.log(`%c▶ 操作回数: ${totalActionCount} | 追加: "${val}"`, "color: blue; font-weight: bold;");
 
         addRow(val);
-        updateState();
+        updateUI();
         textInput.value = "";
     });
 
+    // --- 行追加関数 ---
     function addRow(text) {
         const row = tableBody.insertRow(-1);
         const cellText = row.insertCell(0);
         const cellBtn = row.insertCell(1);
         
-        cellBtn.className = 'cell-action'; // ボタン用セルにクラス適用
-
+        cellBtn.className = 'cell-action';
         cellText.textContent = text;
         
         const delBtn = document.createElement('button');
         delBtn.textContent = '削除';
         delBtn.className = 'btn-delete';
+        
         delBtn.onclick = () => {
+            totalActionCount++;
             row.remove();
-            console.log(`操作ログ: 1件削除。残件数: ${tableBody.rows.length}`);
-            updateState();
+            
+            const currentCount = tableBody.rows.length;
+            console.log(`%c◀ 操作回数: ${totalActionCount} | 削除を実行しました。`, "color: red; font-weight: bold;");
+            
+            if (currentCount < 3) {
+                console.log(`%c[Info] 件数が ${currentCount} 件になったため、表示ボタンが再出現しました。`, "color: green;");
+            }
+            
+            updateUI();
         };
         cellBtn.appendChild(delBtn);
     }
 
-    function updateState() {
-        const currentCount = tableBody.rows.length;
-        counterSpan.textContent = currentCount;
-        showBtn.style.visibility = 'visible'; 
+    // --- UI更新関数 ---
+    function updateUI() {
+        const count = tableBody.rows.length;
+        counterSpan.textContent = count;
+
+        if (count >= 3) {
+            showBtn.style.display = 'none';
+            console.log("%c[Status] リストが満杯です。ボタンを非表示にします。", "background: #eee; color: #333;");
+        } else {
+            showBtn.style.display = 'inline-block';
+        }
     }
 
+    // --- 背景変更 ---
     changeBgBtn.addEventListener('click', () => {
         document.body.style.backgroundColor = colors[colorIndex];
         colorIndex = (colorIndex + 1) % colors.length;
