@@ -74,6 +74,11 @@
 </div>
 
 <script>
+console.log("--- 設問7: ループ開始 ---");
+for (let i = 1; i <= 5; i++) {
+    console.log("ループ回数: " + i);
+}
+
 const textInput = document.getElementById('text-input');
     const showBtn = document.getElementById('show-btn');
     const changeBgBtn = document.getElementById('change-bg-btn');
@@ -83,18 +88,6 @@ const textInput = document.getElementById('text-input');
 
     const colors = ['lightblue', 'lightgreen', 'lightcoral'];
     let colorIndex = 0;
-
-    function debugLoop() {
-        const rows = tableBody.rows;
-        console.log(`--- 現在の全件データ（全 ${rows.length} 件） ---`);
-        
-        for (let i = 0; i < rows.length; i++) {
-            // 各行の1番目のセル（テキスト部分）を取得して表示
-            const text = rows[i].cells[0].textContent;
-            console.log(`${i + 1}件目: ${text}`);
-        }
-        console.log("---------------------------------------");
-    }
 
     showBtn.addEventListener('click', () => {
         const val = textInput.value.trim();
